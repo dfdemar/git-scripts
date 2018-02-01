@@ -1,11 +1,5 @@
 #!/bin/bash
 
-function restore_dates() {
-	__date=$(__log=$(git log -1 --pretty="%at %s" $GIT_COMMIT)
-	grep -m 1 "$__log" ../../hashlog | cut -d" " -f1)
-	test -n "$__date" && export GIT_COMMITTER_DATE=$__date || cat
-}
-
 # Delete any earlier instances of hashlog
 rm hashlog
 
@@ -31,4 +25,8 @@ git rebase $BASE_BRANCH
 # The hash of first commit has now changed, so get the new one
 FIRST_COMMIT=$(git log master..$BRANCH --pretty="%H" | tail -1)
 
-git filter-branch -f --env-filter restore_dates $FIRST_COMMIT^...$BRANCH
+git filter-branch -f --env-filter '
+	__date=$(__log=$(git log -1 --pretty="%at %s" $GIT_COMMIT);
+	grep -m 1 "$__log" ../../hashlog | cut -d" " -f1);
+	test -n "$__date" && export GIT_COMMITTER_DATE=$__date || cat
+' $FIRST_COMMIT^...$BRANCH
