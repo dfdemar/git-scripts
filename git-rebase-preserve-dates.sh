@@ -10,7 +10,11 @@ echo $BRANCH
 FIRST_COMMIT=$(git log master..$BRANCH --pretty="%H" | tail -1)
 echo $FIRST_COMMIT
 
-# LATER: check $FIRST_COMMIT for null
+# Make sure there's at least one commit in the branch
+if [ -z "$FIRST_COMMIT" ]
+	echo "No commits in this branch."
+	exit 1
+fi
 
 # Get the name of the base branch
 BASE_BRANCH=$(git show-branch | grep '*' | grep -v "$(git rev-parse --abbrev-ref HEAD)" | head -n1 | sed 's/.*\[\(.*\)\].*/\1/' | sed 's/[\^~].*//')
@@ -30,3 +34,6 @@ git filter-branch -f --env-filter '
 	grep -m 1 "$__log" ../../hashlog | cut -d" " -f1);
 	test -n "$__date" && export GIT_COMMITTER_DATE=$__date || cat
 ' $FIRST_COMMIT^...$BRANCH
+
+# Cleanup
+rm hashlog
