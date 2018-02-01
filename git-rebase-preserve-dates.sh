@@ -12,6 +12,7 @@ echo $FIRST_COMMIT
 
 # Make sure there's at least one commit in the branch
 if [ -z "$FIRST_COMMIT" ]
+then
 	echo "No commits in this branch."
 	exit 1
 fi
